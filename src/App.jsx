@@ -191,9 +191,24 @@ function App() {
           >
             Cleared [{cleared.length}]
           </button>
+          <button
+            role="tab"
+            aria-selected={tab === 'level'}
+            className={tab === 'level' ? 'on' : ''}
+            onClick={() => setTab('level')}
+          >
+            Level
+          </button>
         </div>
 
-        {shown.length === 0 ? (
+        {tab === 'level' ? (
+          <LevelPanel
+            level={level}
+            totalXp={totalXp}
+            toNext={needed - current}
+            clearedCount={cleared.length}
+          />
+        ) : shown.length === 0 ? (
           <p className="empty">
             {tab === 'active'
               ? 'No active quests. The System awaits your orders.'
@@ -236,6 +251,52 @@ function App() {
         ))}
       </div>
     </main>
+  )
+}
+
+function LevelPanel({ level, totalXp, toNext, clearedCount }) {
+  const ladder = [...HUNTER_TITLES].reverse()
+  const currentIndex = ladder.findLastIndex((t) => level >= t.minLevel)
+  const nextRank = ladder[currentIndex + 1]
+
+  return (
+    <div className="level-panel">
+      <div className="level-stats">
+        <div>
+          <div className="label">TOTAL EXP</div>
+          <div className="value">{totalXp}</div>
+        </div>
+        <div>
+          <div className="label">TO NEXT LEVEL</div>
+          <div className="value">{toNext} XP</div>
+        </div>
+        <div>
+          <div className="label">QUESTS CLEARED</div>
+          <div className="value">{clearedCount}</div>
+        </div>
+        <div>
+          <div className="label">NEXT RANK</div>
+          <div className="value">
+            {nextRank ? `${nextRank.rank} at Lv. ${nextRank.minLevel}` : 'Max rank'}
+          </div>
+        </div>
+      </div>
+
+      <ol className="ladder">
+        {ladder.map((t, i) => {
+          const status =
+            i < currentIndex ? 'passed' : i === currentIndex ? 'current' : 'locked'
+          return (
+            <li key={t.rank} className={status}>
+              <span className={`badge rank-${t.rank}`}>{t.rank}</span>
+              <span className="quest-title">{status === 'locked' ? '???' : t.title}</span>
+              <span className="ladder-req">Lv. {t.minLevel}+</span>
+              {status === 'current' && <span className="ladder-tag">YOU</span>}
+            </li>
+          )
+        })}
+      </ol>
+    </div>
   )
 }
 
